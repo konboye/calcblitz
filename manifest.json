@@ -1,0 +1,26 @@
+{
+  "name": "CalcBlitz — Calculus Drill",
+  "short_name": "CalcBlitz",
+  "description": "Progressive calculus practice app. Master limits, derivatives, and integrals through 10 levels.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f0f4fa",
+  "theme_color": "#1a56db",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "utilities"],
+  "lang": "en-US"
+}
