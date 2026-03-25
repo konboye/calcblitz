@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#f7f3ec">
+<meta name="description" content="CalcBlitz — Progressive Calculus Drill App. Master limits, derivatives, and integrals through 10 levels.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CalcBlitz">
+<title>CalcBlitz ⚡</title>
+
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============ TOKENS ============ */
+:root {
+  --bg:       #f7f3ec;
+  --bg2:      #ede8df;
+  --bg3:      #e4ddd0;
+  --card:     #ffffff;
+  --border:   #d5ccbc;
+  --border2:  #c4b9a5;
+  --text:     #1c1712;
+  --text2:    #7a6e5f;
+  --text3:    #a89d8e;
+  --accent:   #d94f0a;
+  --accent-h: #bf4009;
+  --gold:     #e8a000;
+  --green:    #1f7a45;
+  --red:      #b53030;
+  --blue:     #1a5faa;
+  --shadow-s: 0 1px 4px rgba(0,0,0,.06);
+  --shadow-m: 0 4px 16px rgba(0,0,0,.08);
+  --shadow-l: 0 8px 32px rgba(0,0,0,.10);
+  --r:        14px;
+  --r-sm:     8px;
+}
+[data-theme="dark"] {
+  --bg:       #0e0c09;
+  --bg2:      #171410;
+  --bg3:      #201c16;
+  --card:     #1d1914;
+  --border:   #2e2820;
+  --border2:  #3d352a;
+  --text:     #f0e8d8;
+  --text2:    #8a7d6a;
+  --text3:    #5a5048;
+  --accent:   #ff6020;
+  --accent-h: #e85010;
+  --gold:     #f5b400;
+  --green:    #2ea85a;
+  --red:      #d05050;
+  --blue:     #4a9fff;
+  --shadow-s: 0 1px 4px rgba(0,0,0,.3);
+  --shadow-m: 0 4px 16px rgba(0,0,0,.4);
+  --shadow-l: 0 8px 32px rgba(0,0,0,.5);
+}
+
+/* ============ RESET ============ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Lato',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  transition:background .25s,color .25s;
+  overflow-x:hidden;
+}
+
+/* ============ NOISE OVERLAY ============ */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+  opacity:.6;
+}
+
+/* ============ LAYOUT ============ */
+.app{max-width:660px;margin:0 auto;padding:0 16px 80px}
+
+/* ============ HEADER ============ */
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 0 18px;
+  border-bottom:2px solid var(--border);
+  margin-bottom:0;
+}
+.logo{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;
+  letter-spacing:-0.5px;line-height:1;
+  color:var(--text);
+}
+.logo em{color:var(--accent);font-style:normal}
+.logo sup{font-size:.5em;color:var(--gold);vertical-align:super;font-weight:700}
+
+.header-actions{display:flex;gap:8px;align-items:center}
+.icon-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--card);border:1.5px solid var(--border);
+  color:var(--text);font-size:1rem;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .18s;box-shadow:var(--shadow-s);
+}
+.icon-btn:hover{border-color:var(--accent);transform:scale(1.08)}
+
+/* ============ STATS STRIP ============ */
+.stats-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+  padding:18px 0 0;
+}
+.stat{
+  background:var(--card);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:12px 8px;
+  text-align:center;box-shadow:var(--shadow-s);
+  transition:background .25s,border-color .25s;
+}
+.stat-label{
+  font-size:.6rem;font-weight:700;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--text3);margin-bottom:4px;
+}
+.stat-num{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:1.6rem;
+  line-height:1;color:var(--text);
+}
+.stat-num.c-accent{color:var(--accent)}
+.stat-num.c-green{color:var(--green)}
+.stat-num.c-gold{color:var(--gold)}
+
+/* ============ LEVEL BAR ============ */
+.level-row{
+  display:flex;align-items:center;gap:10px;
+  padding:16px 0 12px;
+}
+.lv-badge{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;
+  letter-spacing:.5px;background:var(--accent);color:#fff;
+  padding:5px 14px;border-radius:100px;white-space:nowrap;
+  box-shadow:0 2px 8px rgba(217,79,10,.3);
+}
+.lv-track{
+  flex:1;height:7px;background:var(--bg3);
+  border-radius:100px;border:1px solid var(--border);overflow:hidden;
+}
+.lv-fill{
+  height:100%;border-radius:100px;
+  background:linear-gradient(90deg,var(--gold),var(--accent));
+  transition:width .5s cubic-bezier(.34,1.56,.64,1);
+}
+.lv-xp{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;
+  color:var(--text3);white-space:nowrap;
+}
+
+/* ============ TOPIC TABS ============ */
+.tabs{display:flex;gap:7px;padding-bottom:18px;flex-wrap:wrap}
+.tab{
+  background:var(--card);border:1.5px solid var(--border);
+  color:var(--text2);padding:7px 18px;border-radius:100px;
+  font-family:'Syne',sans-serif;font-weight:600;font-size:.78rem;
+  cursor:pointer;transition:all .18s;letter-spacing:.3px;
+}
+.tab:hover{border-color:var(--accent);color:var(--accent)}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 3px 10px rgba(217,79,10,.25)}
+
+/* ============ STREAK BANNER ============ */
+.streak-banner{
+  background:linear-gradient(135deg,var(--gold),var(--accent));
+  color:#fff;border-radius:var(--r);padding:13px 18px;
+  margin-bottom:14px;
+  display:none;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;
+  box-shadow:0 4px 16px rgba(217,79,10,.3);
+  animation:slideDown .3s ease;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.streak-banner.show{display:flex}
+
+/* ============ PROBLEM CARD ============ */
+.problem-card{
+  background:var(--card);border:2px solid var(--border);
+  border-radius:20px;padding:28px 24px 24px;
+  box-shadow:var(--shadow-m);
+  position:relative;overflow:hidden;
+  animation:cardIn .3s cubic-bezier(.34,1.3,.64,1);
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+
+.card-accent-bar{
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--gold),var(--accent));
+}
+
+.problem-meta{
+  display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;
+}
+.topic-chip{
+  font-size:.65rem;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;padding:4px 12px;border-radius:100px;
+  border:1.5px solid var(--border2);color:var(--text2);
+  background:var(--bg2);
+}
+.diff-tag{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;
+  color:var(--gold);margin-left:auto;
+}
+.q-num{
+  font-family:'JetBrains Mono',monospace;font-size:.65rem;
+  color:var(--text3);
+}
+
+.problem-body{
+  font-family:'JetBrains Mono',monospace;font-size:1.15rem;
+  line-height:1.8;color:var(--text);margin-bottom:6px;
+  word-break:break-word;
+}
+/* KaTeX overrides for theme */
+.katex{font-size:1.1em!important}
+[data-theme="dark"] .katex{color:var(--text)!important}
+
+.problem-hint{
+  margin-top:12px;font-size:.78rem;color:var(--text2);
+  font-style:italic;line-height:1.5;
+  padding:10px 14px;background:var(--bg2);
+  border-radius:var(--r-sm);border-left:3px solid var(--gold);
+}
+
+/* ============ ANSWER SECTION ============ */
+.answer-wrap{
+  margin-top:18px;
+  animation:fadeUp .25s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.answer-box{
+  background:var(--bg2);border:1.5px dashed var(--border2);
+  border-radius:var(--r);padding:18px 20px;
+}
+.answer-label{
+  font-size:.62rem;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--green);margin-bottom:8px;
+}
+.answer-value{
+  font-family:'JetBrains Mono',monospace;font-size:1.05rem;
+  color:var(--text);line-height:1.7;
+}
+.steps-wrap{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.step{
+  font-size:.8rem;color:var(--text2);line-height:1.7;
+  margin-bottom:3px;display:flex;gap:8px;
+}
+.step::before{content:"→";color:var(--accent);flex-shrink:0;font-family:'JetBrains Mono',monospace}
+
+/* ============ GRADE WIDGET ============ */
+.grade-widget{
+  margin-top:14px;padding:14px 16px;
+  background:var(--bg2);border-radius:var(--r);
+  border:1px solid var(--border);
+  animation:fadeUp .25s ease;
+}
+.grade-label{
+  font-size:.65rem;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;color:var(--text3);margin-bottom:10px;
+}
+.grade-btns{display:flex;gap:8px}
+.grade-btn{
+  flex:1;padding:10px 6px;border-radius:10px;
+  border:1.5px solid var(--border);background:var(--card);
+  cursor:pointer;font-family:'Syne',sans-serif;
+  font-size:.75rem;font-weight:700;
+  transition:all .18s;color:var(--text2);
+  letter-spacing:.3px;
+}
+.grade-btn.g-got{border-color:var(--green);color:var(--green)}
+.grade-btn.g-got:hover:not(:disabled){background:var(--green);color:#fff}
+.grade-btn.g-close{border-color:var(--gold);color:var(--gold)}
+.grade-btn.g-close:hover:not(:disabled){background:var(--gold);color:#fff}
+.grade-btn.g-miss{border-color:var(--red);color:var(--red)}
+.grade-btn.g-miss:hover:not(:disabled){background:var(--red);color:#fff}
+.grade-btn:disabled{opacity:.45;cursor:default}
+
+/* ============ ACTION BUTTONS ============ */
+.btn-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.btn{
+  flex:1;min-width:110px;padding:13px 18px;border-radius:var(--r);
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;
+  cursor:pointer;border:none;transition:all .18s;letter-spacing:.3px;
+}
+.btn-primary{
+  background:var(--accent);color:#fff;
+  box-shadow:0 4px 14px rgba(217,79,10,.3);
+}
+.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px rgba(217,79,10,.4)}
+.btn-primary:active{transform:none}
+.btn-primary:disabled{opacity:.5;cursor:default;transform:none}
+.btn-ghost{
+  background:var(--card);color:var(--text2);
+  border:1.5px solid var(--border);
+}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-next{
+  background:var(--green);color:#fff;
+  box-shadow:0 4px 14px rgba(31,122,69,.25);
+}
+.btn-next:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(31,122,69,.35)}
+
+/* ============ HISTORY ============ */
+.history-section{
+  margin-top:28px;padding-top:22px;
+  border-top:2px solid var(--border);
+}
+.history-title{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;
+  letter-spacing:.5px;color:var(--text2);margin-bottom:12px;
+  text-transform:uppercase;font-size:.72rem;
+}
+.history-dots{display:flex;gap:5px;flex-wrap:wrap}
+.hdot{
+  width:26px;height:26px;border-radius:6px;
+  border:1.5px solid var(--border);display:flex;
+  align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:.62rem;
+  transition:all .2s;
+}
+.hdot.hc{background:var(--green);border-color:var(--green);color:#fff}
+.hdot.hx{background:var(--red);border-color:var(--red);color:#fff}
+.hdot.hn{background:var(--gold);border-color:var(--gold);color:#fff}
+
+/* ============ LOADING STATE ============ */
+.loading{
+  text-align:center;padding:50px 20px;
+}
+.loading-logo{
+  font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;
+  color:var(--text);margin-bottom:14px;
+}
+.loading-logo em{color:var(--accent);font-style:normal}
+.loading-bar{
+  width:200px;height:4px;background:var(--bg3);
+  border-radius:100px;margin:0 auto;overflow:hidden;
+}
+.loading-fill{
+  height:100%;background:linear-gradient(90deg,var(--gold),var(--accent));
+  border-radius:100px;animation:loadPulse 1.2s ease-in-out infinite;
+}
+@keyframes loadPulse{
+  0%{width:10%;margin-left:0}
+  50%{width:60%;margin-left:20%}
+  100%{width:10%;margin-left:90%}
+}
+.loading-text{font-size:.8rem;color:var(--text3);margin-top:12px}
+
+/* ============ ERROR STATE ============ */
+.error-card{
+  background:var(--card);border:2px solid var(--red);
+  border-radius:var(--r);padding:24px;text-align:center;
+}
+.error-card h3{color:var(--red);font-family:'Syne',sans-serif;margin-bottom:8px}
+.error-card p{font-size:.85rem;color:var(--text2);line-height:1.6}
+
+/* ============ DISCLAIMER ============ */
+.disclaimer{
+  margin-top:28px;padding:13px 16px;background:var(--bg2);
+  border-radius:var(--r-sm);border:1px solid var(--border);
+  font-size:.7rem;color:var(--text3);line-height:1.6;text-align:center;
+}
+
+/* ============ RESET LINK ============ */
+.reset-link{
+  display:block;text-align:center;margin-top:14px;
+  font-size:.72rem;color:var(--text3);cursor:pointer;
+  text-decoration:underline;opacity:.6;background:none;border:none;
+}
+.reset-link:hover{opacity:1;color:var(--red)}
+
+/* ============ PACK UNLOCK ============ */
+.pack-banner{
+  background:linear-gradient(135deg,#1a1a2e,#16213e);
+  border:2px solid var(--gold);border-radius:var(--r);
+  padding:20px;margin-bottom:16px;text-align:center;
+  animation:cardIn .3s ease;
+}
+.pack-banner h3{
+  font-family:'Syne',sans-serif;font-weight:800;
+  color:var(--gold);font-size:1.1rem;margin-bottom:6px;
+}
+.pack-banner p{font-size:.8rem;color:#aaa;margin-bottom:14px;line-height:1.5}
+.unlock-row{display:flex;gap:8px}
+.unlock-input{
+  flex:1;padding:10px 14px;border-radius:var(--r-sm);
+  border:1.5px solid var(--border2);background:var(--bg3);
+  color:var(--text);font-family:'JetBrains Mono',monospace;
+  font-size:.85rem;
+}
+.unlock-input:focus{outline:none;border-color:var(--gold)}
+.unlock-btn{
+  padding:10px 18px;background:var(--gold);color:#000;
+  border:none;border-radius:var(--r-sm);cursor:pointer;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;
+  transition:all .18s;
+}
+.unlock-btn:hover{background:#ffc107}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:480px){
+  .stats-strip{grid-template-columns:repeat(2,1fr)}
+  .stat-num{font-size:1.4rem}
+  .problem-body{font-size:1rem}
+  .logo{font-size:1.7rem}
+  .btn{font-size:.8rem;padding:12px 14px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">Calc<em>Blitz</em><sup>⚡</sup></div>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats-strip">
+    <div class="stat"><div class="stat-label">Score</div><div class="stat-num c-accent" id="sScore">0</div></div>
+    <div class="stat"><div class="stat-label">Streak</div><div class="stat-num c-gold" id="sStreak">0</div></div>
+    <div class="stat"><div class="stat-label">Correct</div><div class="stat-num c-green" id="sCorrect">0</div></div>
+    <div class="stat"><div class="stat-label">Done</div><div class="stat-num" id="sTotal">0</div></div>
+  </div>
+
+  <!-- LEVEL -->
+  <div class="level-row">
+    <div class="lv-badge" id="lvBadge">LEVEL 1</div>
+    <div class="lv-track"><div class="lv-fill" id="lvFill" style="width:0%"></div></div>
+    <div class="lv-xp" id="lvXP">0 / 5 XP</div>
+  </div>
+
+  <!-- TOPIC TABS -->
+  <div class="tabs">
+    <button class="tab active" data-topic="all">All</button>
+    <button class="tab" data-topic="limits">Limits</button>
+    <button class="tab" data-topic="derivatives">Derivatives</button>
+    <button class="tab" data-topic="integrals">Integrals</button>
+  </div>
+
+  <!-- STREAK BANNER -->
+  <div class="streak-banner" id="streakBanner">
+    <span>🔥</span><span id="streakMsg">5 in a row!</span>
+  </div>
+
+  <!-- MAIN CONTENT AREA -->
+  <div id="mainArea">
+    <div class="loading">
+      <div class="loading-logo">Calc<em>Blitz</em></div>
+      <div class="loading-bar"><div class="loading-fill"></div></div>
+      <div class="loading-text">Loading problems…</div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-section">
+    <div class="history-title">Recent · Last 40</div>
+    <div class="history-dots" id="histDots"></div>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
+    ⚠️ For educational practice only. Always verify with your textbook or instructor. CalcBlitz is not a substitute for formal instruction.
+  </div>
+
+  <button class="reset-link" id="resetBtn">Reset all progress</button>
+</div>
+
+<script>
+// =====================================================================
+// CONFIG
+// =====================================================================
+const PACK1_URL = 'questions_pack1.json';
+const PACK2_URL = 'questions_pack2.json';
+const PACK2_CODE = 'CALCBLITZ2'; // change this to whatever you sell
+
+// =====================================================================
+// STATE
+// =====================================================================
+const DEFAULT_STATE = {
+  score:0, streak:0, correct:0, total:0,
+  level:1, xp:0,
+  history:[], // {topic, result, level}
+  topic:'all',
+  theme:'light',
+  pack2Unlocked:false,
+  seenIds:[]
+};
+
+let S = load();
+let questions = { limits:[], derivatives:[], integrals:[] };
+let current = null;
+let answerShown = false;
+let graded = false;
+
+// =====================================================================
+// PERSISTENCE
+// =====================================================================
+function save(){ try{ localStorage.setItem('cb_v2', JSON.stringify(S)); }catch(e){} }
+function load(){
+  try{
+    const raw = localStorage.getItem('cb_v2');
+    if(raw) return Object.assign({}, DEFAULT_STATE, JSON.parse(raw));
+  }catch(e){}
+  return {...DEFAULT_STATE};
+}
+
+// =====================================================================
+// QUESTION LOADING
+// =====================================================================
+async function loadQuestions(){
+  try{
+    const res = await fetch(PACK1_URL);
+    if(!res.ok) throw new Error('Pack 1 not found');
+    const data = await res.json();
+    questions.limits = (data.limits || []);
+    questions.derivatives = (data.derivatives || []);
+    questions.integrals = (data.integrals || []);
+
+    // Try pack 2 if unlocked
+    if(S.pack2Unlocked){
+      try{
+        const res2 = await fetch(PACK2_URL);
+        if(res2.ok){
+          const d2 = await res2.json();
+          questions.limits.push(...(d2.limits||[]));
+          questions.derivatives.push(...(d2.derivatives||[]));
+          questions.integrals.push(...(d2.integrals||[]));
+        }
+      }catch(e){ /* pack2 optional */ }
+    }
+
+    renderProblem();
+  }catch(err){
+    document.getElementById('mainArea').innerHTML = `
+      <div class="error-card">
+        <h3>Could not load questions</h3>
+        <p>Make sure <strong>questions_pack1.json</strong> is in the same folder as index.html.<br><br>
+        If hosting on GitHub Pages, ensure the file is committed to the same repository folder.</p>
+      </div>`;
+  }
+}
+
+// =====================================================================
+// PICK PROBLEM
+// =====================================================================
+function getPool(){
+  const t = S.topic;
+  if(t === 'all') return [...questions.limits, ...questions.derivatives, ...questions.integrals];
+  return questions[t] || [];
+}
+
+function pickProblem(){
+  const pool = getPool();
+  if(!pool.length) return null;
+  const lv = S.level;
+  // Prefer level-appropriate, vary by ±1
+  let candidates = pool.filter(p => p.level >= Math.max(1, lv-1) && p.level <= lv+1);
+  if(!candidates.length) candidates = pool;
+  // Avoid recent repeats (last 20 seen)
+  const recent = S.seenIds.slice(-20);
+  const fresh = candidates.filter(p => !recent.includes(p.id));
+  const pick = fresh.length ? fresh : candidates;
+  return pick[Math.floor(Math.random() * pick.length)];
+}
+
+// =====================================================================
+// RENDER STATS
+// =====================================================================
+function renderStats(){
+  document.getElementById('sScore').textContent = S.score;
+  document.getElementById('sStreak').textContent = S.streak + (S.streak >= 3 ? '🔥' : '');
+  document.getElementById('sCorrect').textContent = S.correct;
+  document.getElementById('sTotal').textContent = S.total;
+  document.getElementById('lvBadge').textContent = `LEVEL ${S.level}`;
+  const needed = xpNeeded(S.level);
+  const pct = Math.min(100, (S.xp / needed) * 100);
+  document.getElementById('lvFill').style.width = pct + '%';
+  document.getElementById('lvXP').textContent = `${S.xp} / ${needed} XP`;
+}
+
+function xpNeeded(lv){ return lv * 5; }
+
+function awardXP(n){
+  S.xp += n;
+  while(S.level < 10 && S.xp >= xpNeeded(S.level)){
+    S.xp -= xpNeeded(S.level);
+    S.level++;
+  }
+  if(S.level >= 10) S.xp = xpNeeded(10);
+}
+
+// =====================================================================
+// RENDER HISTORY
+// =====================================================================
+function renderHistory(){
+  const dots = document.getElementById('histDots');
+  dots.innerHTML = S.history.slice(-40).map(h => {
+    const cls = h.result==='correct'?'hc':h.result==='close'?'hn':'hx';
+    const icon = h.result==='correct'?'✓':h.result==='close'?'~':'✗';
+    return `<div class="hdot ${cls}" title="${h.topic} L${h.level}">${icon}</div>`;
+  }).join('');
+}
+
+// =====================================================================
+// RENDER PROBLEM
+// =====================================================================
+function diffLabel(lv){
+  if(lv<=2) return 'Intro';
+  if(lv<=4) return 'Easy';
+  if(lv<=6) return 'Medium';
+  if(lv<=8) return 'Hard';
+  return 'Expert';
+}
+
+function topicOf(p){
+  if(questions.limits.includes(p)) return 'Limits';
+  if(questions.derivatives.includes(p)) return 'Derivatives';
+  return 'Integrals';
+}
+
+function renderProblem(){
+  current = pickProblem();
+  answerShown = false;
+  graded = false;
+
+  if(!current){
+    document.getElementById('mainArea').innerHTML = `<div class="error-card"><h3>No problems found</h3><p>Try selecting a different topic.</p></div>`;
+    return;
+  }
+
+  // Track seen
+  S.seenIds = [...S.seenIds.slice(-50), current.id];
+  save();
+
+  const totalQ = questions.limits.length + questions.derivatives.length + questions.integrals.length;
+
+  document.getElementById('mainArea').innerHTML = `
+    <div class="problem-card" id="pCard">
+      <div class="card-accent-bar"></div>
+      <div class="problem-meta">
+        <span class="topic-chip">${topicOf(current)}</span>
+        <span class="q-num">#${current.id}</span>
+        <span class="diff-tag">LV ${current.level} · ${diffLabel(current.level)}</span>
+      </div>
+      <div class="problem-body" id="pBody">\\(${current.q}\\)</div>
+      ${current.hint ? `<div class="problem-hint">💡 ${current.hint}</div>` : ''}
+      <div id="ansArea"></div>
+      <div class="btn-row" id="btnRow">
+        <button class="btn btn-primary" id="showAnsBtn" onclick="showAnswer()">Show Answer</button>
+        <button class="btn btn-ghost" onclick="skipProblem()">Skip →</button>
+      </div>
+    </div>
+    ${!S.pack2Unlocked ? `
+    <div class="pack-banner" id="packBanner" style="margin-top:16px">
+      <h3>🔒 Pack 2 Available</h3>
+      <p>Unlock hundreds more problems across all topics and levels.</p>
+      <div class="unlock-row">
+        <input class="unlock-input" id="codeInput" placeholder="Enter unlock code…" type="text">
+        <button class="unlock-btn" onclick="tryUnlock()">Unlock</button>
+      </div>
+      <p id="unlockMsg" style="font-size:.72rem;margin-top:8px;color:#f5b400;display:none"></p>
+    </div>` : ''}
+  `;
+
+  renderKaTeX();
+}
+
+// =====================================================================
+// KATEX RENDER
+// =====================================================================
+function renderKaTeX(){
+  if(typeof renderMathInElement === 'undefined'){ setTimeout(renderKaTeX, 200); return; }
+  renderMathInElement(document.getElementById('mainArea'), {
+    delimiters:[
+      {left:'\\(',right:'\\)',display:false},
+      {left:'\\[',right:'\\]',display:true},
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false},
+    ],
+    throwOnError:false
+  });
+}
+
+function renderKaTeXIn(el){
+  if(!el) return;
+  if(typeof renderMathInElement === 'undefined'){ setTimeout(()=>renderKaTeXIn(el),200); return; }
+  renderMathInElement(el,{
+    delimiters:[
+      {left:'\\(',right:'\\)',display:false},
+      {left:'\\[',right:'\\]',display:true},
+      {left:'$',right:'$',display:false},
+    ],
+    throwOnError:false
+  });
+}
+
+// =====================================================================
+// SHOW ANSWER
+// =====================================================================
+function showAnswer(){
+  if(answerShown) return;
+  answerShown = true;
+  const btn = document.getElementById('showAnsBtn');
+  if(btn){ btn.disabled = true; btn.style.opacity = '.5'; }
+
+  const stepsHTML = current.steps
+    ? current.steps.map(s => `<div class="step">${s}</div>`).join('')
+    : '';
+
+  const ansArea = document.getElementById('ansArea');
+  ansArea.innerHTML = `
+    <div class="answer-wrap">
+      <div class="answer-box">
+        <div class="answer-label">✓ Answer</div>
+        <div class="answer-value" id="ansVal">\\(${current.a}\\)</div>
+        ${stepsHTML ? `<div class="steps-wrap" id="stepsWrap">${stepsHTML}</div>` : ''}
+      </div>
+      <div class="grade-widget">
+        <div class="grade-label">How did you do?</div>
+        <div class="grade-btns">
+          <button class="grade-btn g-got" onclick="grade('correct')">✓ Got it</button>
+          <button class="grade-btn g-close" onclick="grade('close')">~ Close</button>
+          <button class="grade-btn g-miss" onclick="grade('wrong')">✗ Missed</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  renderKaTeXIn(ansArea);
+}
+
+// =====================================================================
+// GRADE
+// =====================================================================
+function grade(result){
+  if(graded) return;
+  graded = true;
+
+  S.total++;
+  const topic = topicOf(current).toLowerCase();
+
+  if(result === 'correct'){
+    S.correct++;
+    S.score += S.level * 10;
+    S.streak++;
+    awardXP(2);
+    if(S.streak > 0 && S.streak % 5 === 0) flashStreak();
+  } else if(result === 'close'){
+    S.score += S.level * 3;
+    S.streak = 0;
+    awardXP(1);
+  } else {
+    S.streak = 0;
+  }
+
+  S.history.push({ topic, result, level: current.level });
+  save();
+  renderStats();
+  renderHistory();
+
+  // Disable grade buttons
+  document.querySelectorAll('.grade-btn').forEach(b => b.disabled = true);
+
+  // Swap buttons
+  const row = document.getElementById('btnRow');
+  if(row) row.innerHTML = `<button class="btn btn-next" onclick="renderProblem()">Next Problem →</button>`;
+}
+
+function skipProblem(){
+  S.streak = 0;
+  save();
+  renderStats();
+  renderProblem();
+}
+
+// =====================================================================
+// STREAK FLASH
+// =====================================================================
+function flashStreak(){
+  const b = document.getElementById('streakBanner');
+  document.getElementById('streakMsg').textContent = `${S.streak} in a row! 🔥`;
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'), 3000);
+}
+
+// =====================================================================
+// PACK UNLOCK
+// =====================================================================
+function tryUnlock(){
+  const input = document.getElementById('codeInput');
+  const msg = document.getElementById('unlockMsg');
+  if(!input) return;
+  const val = input.value.trim().toUpperCase();
+  if(val === PACK2_CODE){
+    S.pack2Unlocked = true;
+    save();
+    msg.textContent = '✓ Pack 2 unlocked! Reloading…';
+    msg.style.display = 'block';
+    msg.style.color = '#2ea85a';
+    setTimeout(()=>loadQuestions(), 1200);
+  } else {
+    msg.textContent = '✗ Invalid code. Check your purchase confirmation.';
+    msg.style.display = 'block';
+    msg.style.color = '#d05050';
+    input.value = '';
+    input.focus();
+  }
+}
+
+// =====================================================================
+// THEME
+// =====================================================================
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeBtn').textContent = t==='dark'?'☀️':'🌙';
+  document.querySelector('meta[name="theme-color"]').content = t==='dark'?'#0e0c09':'#f7f3ec';
+}
+
+document.getElementById('themeBtn').addEventListener('click', ()=>{
+  S.theme = S.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(S.theme);
+  save();
+});
+
+// =====================================================================
+// TOPIC TABS
+// =====================================================================
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    S.topic = tab.dataset.topic;
+    save();
+    renderProblem();
+  });
+});
+
+// Restore active tab
+document.querySelectorAll('.tab').forEach(t=>{
+  t.classList.toggle('active', t.dataset.topic === S.topic);
+});
+
+// =====================================================================
+// RESET
+// =====================================================================
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('Reset all progress? This cannot be undone.')){
+    const keep = { theme: S.theme, pack2Unlocked: S.pack2Unlocked };
+    S = Object.assign({...DEFAULT_STATE}, keep);
+    save();
+    renderStats();
+    renderHistory();
+    renderProblem();
+  }
+});
+
+// =====================================================================
+// INIT
+// =====================================================================
+applyTheme(S.theme);
+renderStats();
+renderHistory();
+loadQuestions();
+</script>
+</body>
+</html>
